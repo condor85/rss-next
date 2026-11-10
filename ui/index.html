@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#2457e6">
+<title>Lettore RSS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar" id="bar">
+  <button id="bBack" class="ic" aria-label="Indietro" hidden></button>
+  <h1 id="ttl">Lettore RSS</h1>
+  <button id="bRef" class="ic" aria-label="Aggiorna tutti i feed"></button>
+  <button id="bMenu" class="ic" aria-label="Gestisci feed e impostazioni"></button>
+  <div id="progress" hidden><i></i></div>
+</header>
+
+<div id="notice" class="notice" hidden></div>
+<nav id="chips" class="chips" aria-label="Filtra per feed" hidden></nav>
+<div id="tools" class="tools" hidden>
+  <div class="seg" role="group" aria-label="Filtro articoli">
+    <button id="segUnread" type="button">Non letti</button>
+    <button id="segAll" type="button">Tutti</button>
+  </div>
+  <button id="bMark" class="btn small sec" type="button">Segna letti</button>
+</div>
+<main id="main"></main>
+
+<section id="sheet" class="sheet" hidden aria-label="Gestisci">
+  <header class="bar">
+    <h1>Gestisci</h1>
+    <button id="bClose" class="ic" aria-label="Chiudi"></button>
+  </header>
+  <div class="sheet-body">
+    <h2>Aggiungi un feed</h2>
+    <form id="addForm" class="box" autocomplete="off">
+      <input id="inUrl" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"
+             placeholder="Indirizzo del feed o del sito" aria-label="Indirizzo del feed o del sito">
+      <input id="inFolder" type="text" list="folderList" placeholder="Cartella (es. Notizie)" aria-label="Cartella">
+      <datalist id="folderList"></datalist>
+      <button id="bAdd" class="btn" type="submit">Aggiungi</button>
+      <p id="addMsg" class="msg" hidden></p>
+    </form>
+
+    <h2>Importa ed esporta</h2>
+    <div class="box">
+      <label class="btn sec" for="inFile">Importa file (OPML, elenco di URL, feed XML)</label>
+      <input id="inFile" type="file" hidden>
+      <p class="hint">Dal file OPML le cartelle vengono mantenute. Per un elenco di URL o un file di feed puoi scegliere la cartella qui sopra.</p>
+      <button id="bExport" class="btn sec" type="button">Copia OPML negli appunti</button>
+      <textarea id="exportBox" readonly hidden aria-label="OPML da copiare"></textarea>
+    </div>
+
+    <h2>Impostazioni</h2>
+    <div class="box">
+      <label class="line">Aggiorna da solo (con l'app aperta)
+        <select id="setAuto">
+          <option value="0">Mai</option>
+          <option value="15">Ogni 15 min</option>
+          <option value="30">Ogni 30 min</option>
+          <option value="60">Ogni ora</option>
+        </select>
+      </label>
+      <label class="line">Mostra le miniature <input id="setImages" type="checkbox"></label>
+      <label class="line">Notifica i nuovi articoli <input id="setNotify" type="checkbox"></label>
+      <p id="notifyHint" class="hint" hidden></p>
+      <button id="bMarkAll" class="btn sec" type="button">Segna tutto come letto</button>
+      <button id="bPurge" class="btn sec" type="button">Elimina gli articoli già letti</button>
+    </div>
+
+    <h2>I tuoi feed</h2>
+    <div id="feeds"></div>
+    <p id="about" class="about"></p>
+  </div>
+</section>
+
+<dialog id="dlg">
+  <form method="dialog">
+    <h3 id="dlgT"></h3>
+    <p id="dlgP" class="hint" hidden></p>
+    <input id="dlgIn" type="text" autocomplete="off" hidden>
+    <div class="acts">
+      <button class="btn sec" value="cancel">Annulla</button>
+      <button class="btn" id="dlgOk" value="ok">OK</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

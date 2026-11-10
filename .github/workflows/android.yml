@@ -1,0 +1,52 @@
+# Compila l'APK Android su GitHub, senza installare nulla sul tuo PC.
+# Uso: carica il progetto su un repository GitHub → scheda "Actions" → "APK Android" → Run workflow
+# Al termine scarichi l'APK dalla sezione "Artifacts".
+name: APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Installa NDK
+        run: sdkmanager "ndk;27.2.12479018" "platforms;android-34" "build-tools;34.0.0"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - name: Installa tauri-cli
+        run: cargo install tauri-cli --version "^2" --locked
+
+      - name: Genera il progetto Android
+        working-directory: src-tauri
+        run: cargo tauri android init --ci
+
+      - name: Compila l'APK (arm64, firmato con chiave di debug: si installa subito)
+        working-directory: src-tauri
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.2.12479018
+        run: cargo tauri android build --apk --debug --target aarch64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lettore-rss-apk
+          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
