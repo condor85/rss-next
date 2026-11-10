@@ -46,22 +46,26 @@ jobs:
         working-directory: src-tauri
         run: cargo tauri android init --ci
 
-      - name: "Compila l'APK (arm64, firmato con chiave di debug, si installa subito)"
+      - name: Compila l'APK ottimizzato (arm64)
         working-directory: src-tauri
-        run: cargo tauri android build --apk --debug --target aarch64
+        run: cargo tauri android build --apk --target aarch64
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: lettore-rss-apk
-          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+      - name: Allinea e firma l'APK
+        run: |
+          UNSIGNED=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" -path "*release*" | head -n 1)
+          echo "APK non firmato: $UNSIGNED"
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" aligned.apk
+          "$BT/apksigner" sign --ks .github/signing/lettore-rss.jks \
+            --ks-pass pass:android --key-pass pass:android \
+            --out lettore-rss.apk aligned.apk
+          "$BT/apksigner" verify --verbose lettore-rss.apk | head -5
+          ls -la lettore-rss.apk
 
       - name: Pubblica l'APK nelle Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" | head -n 1)
-          echo "APK trovato: $APK"
-          cp "$APK" lettore-rss.apk
           gh release create "build-${{ github.run_number }}" lettore-rss.apk \
             --title "Lettore RSS build ${{ github.run_number }}" \
-            --notes "APK arm64 firmato con chiave di debug: scaricalo sul telefono e aprilo per installarlo."
+            --notes "APK arm64 ottimizzato. Scaricalo sul telefono e aprilo per installarlo. Le build successive si installano sopra la precedente senza perdere i dati."
