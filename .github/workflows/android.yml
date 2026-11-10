@@ -39,7 +39,7 @@ jobs:
         working-directory: src-tauri
         run: cargo tauri android init --ci
 
-      - name: Compila l'APK (arm64, firmato con chiave di debug: si installa subito)
+      - name: "Compila l'APK (arm64, firmato con chiave di debug, si installa subito)"
         working-directory: src-tauri
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
