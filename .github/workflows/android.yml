@@ -19,10 +19,14 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - uses: android-actions/setup-android@v3
-
-      - name: Installa NDK
-        run: sdkmanager "ndk;27.2.12479018" "platforms;android-34" "build-tools;34.0.0"
+      - name: Prepara Android SDK/NDK (già presenti sul runner)
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "NDK: $ANDROID_NDK_LATEST_HOME"
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/ndk" || true
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          echo "NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> "$GITHUB_ENV"
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -41,9 +45,6 @@ jobs:
 
       - name: "Compila l'APK (arm64, firmato con chiave di debug, si installa subito)"
         working-directory: src-tauri
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.2.12479018
         run: cargo tauri android build --apk --debug --target aarch64
 
       - uses: actions/upload-artifact@v4
