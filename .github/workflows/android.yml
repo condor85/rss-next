@@ -8,6 +8,9 @@ on:
   push:
     tags: ["v*"]
 
+permissions:
+  contents: write
+
 jobs:
   apk:
     runs-on: ubuntu-24.04
@@ -51,3 +54,14 @@ jobs:
         with:
           name: lettore-rss-apk
           path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+
+      - name: Pubblica l'APK nelle Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*.apk" | head -n 1)
+          echo "APK trovato: $APK"
+          cp "$APK" lettore-rss.apk
+          gh release create "build-${{ github.run_number }}" lettore-rss.apk \
+            --title "Lettore RSS build ${{ github.run_number }}" \
+            --notes "APK arm64 firmato con chiave di debug: scaricalo sul telefono e aprilo per installarlo."
